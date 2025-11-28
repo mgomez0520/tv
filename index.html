@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Agenda Inspecciones Vehiculares</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    :root{
+      --bg: #0b0b0b;
+      --panel: #111;
+      --muted: #222;
+      --accent: #d71920; /* rojo empresa */
+      --white: #ffffff;
+      --border: #2a2a2a;
+    }
+    html,body{height:100%;}
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background: linear-gradient(180deg,var(--bg), #070707 60%);
+      color: var(--white);
+    }
+    header{
+      display:flex;
+      align-items:center;
+      gap:18px;
+      padding: 10px 24px;
+      background: linear-gradient(90deg,var(--panel), var(--muted));
+      border-bottom: 4px solid var(--accent);
+    }
+    #logo{
+      height:64px;
+      width:auto;
+      object-fit:contain;
+    }
+    h1{
+      margin:0;
+      font-size:2.0rem;
+      letter-spacing:1px;
+    }
+    .subtitle{
+      color:#ddd;
+      font-size:0.9rem;
+      margin-top:4px;
+    }
+
+    main{padding:18px;}
+
+    .controls{
+      display:flex;
+      gap:12px;
+      align-items:center;
+      margin-bottom:12px;
+    }
+    .controls label{font-size:0.95rem}
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 1.4rem; /* grande para TV */
+      table-layout:fixed;
+    }
+    thead {
+      background: #141414;
+      position: sticky;
+      top: 0;
+      z-index: 2;
+    }
+    th, td {
+      border: 1px solid var(--border);
+      padding: 12px 10px;
+      text-align: center;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    th{
+      text-transform:uppercase;
+      font-weight:700;
+      background: linear-gradient(180deg,#1b1b1b,#111);
+    }
+    tbody tr:nth-child(even) {background:#0f0f0f}
+    tbody tr:nth-child(odd) {background:#0b0b0b}
+
+    /* destacar filas de hoy */
+    .hoy{background: linear-gradient(90deg,#2a0f0f33, rgba(215,25,32,0.06));}
+    .empty{opacity:0.7; font-style:italic}
+
+    footer{padding:8px 18px;color:#bbb;font-size:0.9rem}
+
+    @media (max-width:800px){
+      th,td{font-size:1rem;padding:8px}
+      #logo{height:48px}
+      h1{font-size:1.2rem}
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <img id="logo" src="logo.png" alt="Alberto Ochoa & Cia">
+    <div>
+      <h1>Agenda Inspecciones Vehiculares</h1>
+      <div class="subtitle">Proyección diaria — Alberto Ochoa & Cia. S.A.S</div>
+    </div>
+  </header>
+
+  <main>
+    <div class="controls">
+      <label>Fuente: <strong>Google Sheets</strong></label>
+      <select id="mode">
+        <option value="hoy">Mostrar sólo hoy</option>
+        <option value="todas">Mostrar todas</option>
+      </select>
+      <div style="flex:1"></div>
+      <div>Última actualización: <span id="last">—</span></div>
+    </div>
+
+    <table id="agenda">
+      <thead>
+        <tr>
+          <th>TIPO</th>
+          <th>FECHA</th>
+          <th>EMPRESA</th>
+          <th>VEHICULO</th>
+          <th>HORA INICIO</th>
+          <th>HORA FIN</th>
+          <th>COORDINADOR</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="empty"><td colspan="7">Cargando agenda...</td></tr>
+      </tbody>
+    </table>
+  </main>
+
+  <footer>
+    Abre esta página en el televisor desde el navegador (usar la dirección IP del equipo que sirve esta página).
+  </footer>
+
+  <script>
+    // URL pública de export CSV de Google Sheets (export?format=csv&gid=...)
+    const CSV_URL = "https://docs.google.com/spreadsheets/d/1z0JSYJaETDFlsW8cmxn3LO4GFx7HO6sWHdVoDK05qF4/export?format=csv&gid=1863384913";
+    const REFRESH_MS = 30 * 1000; // refrescar cada 30s
+
+    // intentamos parsear fechas en varios formatos
+    function parseFecha(str){
+      if(!str) return null;
+      str = str.trim();
+      // si parece ISO
+      const iso = /^\d{4}-\d{2}-\d{2}/;
+      if(iso.test(str)) return new Date(str);
+      // si es dd/mm/yyyy o dd-mm-yyyy
+      const dm = /^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})$/;
+      const m = str.match(dm);
+      if(m){
+        let d = parseInt(m[1],10);
+        let mo = parseInt(m[2],10)-1;
+        let y = parseInt(m[3],10);
+        if(y<100) y += 2000;
+        return new Date(y,mo,d);
+      }
+      // fallback: Date constructor
+      const dd = new Date(str);
+      if(!isNaN(dd)) return dd;
+      return null;
+    }
+
+    function isSameDay(a,b){
+      return a.getFullYear()===b.getFullYear() && a.getMonth()===b.getMonth() && a.getDate()===b.getDate();
+    }
+
+    async function cargarAgenda(){
+      const cuerpo = document.querySelector('#agenda tbody');
+      const lastSpan = document.getElementById('last');
+      try{
+        const resp = await fetch(CSV_URL + '&_ts=' + Date.now());
+        if(!resp.ok) throw new Error('HTTP ' + resp.status);
+        const texto = await resp.text();
+        lastSpan.textContent = new Date().toLocaleTimeString();
+
+        // Parse CSV simple (no comillas complejas)
+        const filas = texto.split('\n').filter(r=>r.trim().length>0).map(r => r.split(/,(?=(?:[^"]*"[^"]*")*[^"]*$)/));
+        // filas[0] encabezados - buscamos las posiciones para seguridad
+        const encabezado = filas[0].map(h=>h.replace(/^\s+|\s+$/g,'').toUpperCase());
+        // columnas esperadas: TIPO, FECHA, EMPRESA, VEHICULO, HORA INICIO, HORA FIN, COORDINADOR
+        const colsMap = {};
+        ['TIPO','FECHA','EMPRESA','VEHICULO','HORA INICIO','HORA FIN','COORDINADOR'].forEach(k=>{
+          const idx = encabezado.findIndex(h=>h.includes(k));
+          colsMap[k]= idx>=0?idx:null;
+        });
+
+        // eliminar filas de encabezado
+        const dataRows = filas.slice(1);
+        const hoy = new Date();
+
+        const mode = document.getElementById('mode').value;
+        cuerpo.innerHTML = '';
+
+        let mostradas = 0;
+        for(const r of dataRows){
+          // evitar filas vacías
+          if(r.every(c=>!c || c.trim()==='')) continue;
+
+          const fechaStr = colsMap['FECHA']!==null ? (r[colsMap['FECHA']]||'') : r[1] || '';
+          const fecha = parseFecha(fechaStr);
+          const filaDateIsHoy = fecha && isSameDay(fecha,hoy);
+
+          if(mode==='hoy' && !filaDateIsHoy) continue; // saltar
+
+          const tr = document.createElement('tr');
+          if(filaDateIsHoy) tr.classList.add('hoy');
+
+          const getCell = (k, fallbackIndex)=>{
+            const idx = colsMap[k]!==null?colsMap[k]:fallbackIndex;
+            return (r[idx]||'').replace(/^"|"$/g,'').trim();
+          }
+
+          const cells = [
+            getCell('TIPO',0),
+            fechaStr,
+            getCell('EMPRESA',2),
+            getCell('VEHICULO',3),
+            getCell('HORA INICIO',4),
+            getCell('HORA FIN',5),
+            getCell('COORDINADOR',6)
+          ];
+
+          for(const c of cells){
+            const td = document.createElement('td');
+            td.textContent = c;
+            tr.appendChild(td);
+          }
+
+          cuerpo.appendChild(tr);
+          mostradas++;
+        }
+
+        if(mostradas===0){
+          const tr = document.createElement('tr');
+          tr.classList.add('empty');
+          const td = document.createElement('td');
+          td.setAttribute('colspan',7);
+          td.textContent = (mode==='hoy')? 'No hay inspecciones para hoy.' : 'No hay datos disponibles.';
+          tr.appendChild(td);
+          cuerpo.appendChild(tr);
+        }
+
+      }catch(err){
+        console.error('Error cargando agenda:',err);
+        cuerpo.innerHTML = '<tr class="empty"><td colspan="7">Error cargando la agenda: '+err.message+'</td></tr>';
+      }
+    }
+
+    // eventos
+    document.getElementById('mode').addEventListener('change', ()=>{ cargarAgenda(); });
+
+    cargarAgenda();
+    setInterval(cargarAgenda, REFRESH_MS);
+  </script>
+</body>
+</html>
