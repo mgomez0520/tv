@@ -11,14 +11,14 @@
       --panel: #f5f5f5;
       --muted: #eaeaea;
       --accent: #d71920;
-      --white: #000;
+      --white: #000000;
       --border: #d0d0d0;
 
-      /* Colores de RESULTADO */
-      --ok: #b7f7b3;        /* Habilitado */
-      --bad: #ffb3b3;       /* Inhabilitado */
-      --warn: #ffe599;      /* Condicionado */
-      --blue: #b3d9ff;      /* Sin inspección */
+      /* colores resultado */
+      --res-habilitado: #4caf50;      /* verde */
+      --res-inhabilitado: #e53935;    /* rojo */
+      --res-condicionado: #f2a900;    /* amarillo quemado */
+      --res-sin: #2196f3;             /* azul */
     }
 
     html,body{height:100%;}
@@ -36,23 +36,26 @@
       padding: 10px 24px;
       background: var(--panel);
       border-bottom: 4px solid var(--accent);
-      color:#000;
+      color: #000;
     }
 
     #logo{
       height:64px;
       width:auto;
+      object-fit:contain;
     }
 
     h1{
       margin:0;
       font-size:2rem;
+      letter-spacing:1px;
       color:#000;
     }
 
     .subtitle{
       color:#444;
       font-size:0.9rem;
+      margin-top:4px;
     }
 
     main{padding:18px;}
@@ -68,7 +71,8 @@
     table {
       width: 100%;
       border-collapse: collapse;
-      font-size: 1.3rem;
+      font-size: 1.4rem;
+      table-layout:fixed;
       background:#fff;
     }
 
@@ -77,219 +81,246 @@
       position: sticky;
       top: 0;
       z-index: 2;
+      color:#000;
     }
 
     th, td {
       border: 1px solid var(--border);
-      padding: 10px;
-      text-align:center;
-      white-space: nowrap;
+      padding: 10px 8px;
+      text-align: center;
       overflow:hidden;
       text-overflow:ellipsis;
+      white-space:nowrap;
+      color:#000;
     }
 
     th{
       text-transform:uppercase;
       font-weight:700;
+      background: #f0f0f0;
     }
 
-    tbody tr:nth-child(even){background:#fafafa}
-    tbody tr:nth-child(odd){background:#fff}
+    tbody tr:nth-child(even) {background:#fafafa}
+    tbody tr:nth-child(odd) {background:#ffffff}
 
-    /* Fila de hoy */
-    .hoy{
-      background:#ffefef !important;
-    }
+    .hoy{ background:#ffefef; }
 
-    /* Colores por resultado */
-    .res-habilitado{background: var(--ok) !important;}
-    .res-inhabilitado{background: var(--bad) !important;}
-    .res-condicionado{background: var(--warn) !important;}
-    .res-sin{background: var(--blue) !important;}
+    /* Colores resultado */
+    .res-habilitado{ background: var(--res-habilitado) !important; color:white; }
+    .res-inhabilitado{ background: var(--res-inhabilitado) !important; color:white; }
+    .res-condicionado{ background: var(--res-condicionado) !important; color:black; }
+    .res-sin{ background: var(--res-sin) !important; color:white; }
 
     .empty{
       opacity:0.7;
       font-style:italic;
+      color:#555;
     }
 
-    @media(max-width:800px){
-      th,td{font-size:1rem;padding:6px;}
-      #logo{height:48px;}
-      h1{font-size:1.2rem;}
+    footer{
+      padding:8px 18px;
+      color:#555;
+      font-size:0.9rem;
     }
   </style>
 </head>
 
 <body>
-<header>
-  <img id="logo" src="logo.png">
-  <div>
-    <h1>Agenda Inspecciones Vehiculares</h1>
-    <div class="subtitle">Proyección diaria — Alberto Ochoa & Cia. S.A.S.</div>
-  </div>
-</header>
 
-<main>
-  <div class="controls">
-    <label>Fuente: <strong>Google Sheets</strong></label>
-    <select id="mode">
-      <option value="hoy">Mostrar sólo hoy</option>
-      <option value="todas">Mostrar todas</option>
-    </select>
-    <div style="flex:1"></div>
-    <div>Última actualización: <span id="last">—</span></div>
-  </div>
+  <header>
+    <img id="logo" src="logo.png" alt="Alberto Ochoa & Cia">
+    <div>
+      <h1>Agenda Inspecciones Vehiculares</h1>
+      <div class="subtitle">Proyección diaria — Alberto Ochoa & Cia. S.A.S</div>
+    </div>
+  </header>
 
-  <table id="agenda">
-    <thead>
-      <tr>
-        <th>TIPO</th>
-        <th>FECHA</th>
-        <th>EMPRESA</th>
-        <th>VEHICULO</th>
-        <th>HORA INICIO</th>
-        <th>HORA FIN</th>
-        <th>COORDINADOR</th>
-        <th>RESULTADO</th>
-      </tr>
-    </thead>
+  <main>
+    <div class="controls">
+      <label>Fuente: <strong>Google Sheets</strong></label>
+      <select id="mode">
+        <option value="hoy">Mostrar sólo hoy</option>
+        <option value="todas">Mostrar todas</option>
+      </select>
+      <div style="flex:1"></div>
+      <div>Última actualización: <span id="last">—</span></div>
+    </div>
 
-    <tbody>
-      <tr class="empty"><td colspan="8">Cargando agenda...</td></tr>
-    </tbody>
-  </table>
-</main>
+    <table id="agenda">
+      <thead>
+        <tr>
+          <th>TIPO</th>
+          <th>FECHA</th>
+          <th>EMPRESA</th>
+          <th>VEHICULO</th>
+          <th>HORA INICIO</th>
+          <th>HORA FIN</th>
+          <th>COORDINADOR</th>
+          <th>RESULTADO</th>
+        </tr>
+      </thead>
 
-<footer style="padding:10px;color:#555;font-size:0.9rem;">
-  Abre esta página en el televisor desde el navegador (usar la IP del equipo servidor).
-</footer>
+      <tbody>
+        <tr class="empty"><td colspan="8">Cargando agenda...</td></tr>
+      </tbody>
+    </table>
+  </main>
 
+  <footer>
+    Abre esta página en el televisor desde el navegador (usar la IP del equipo servidor).
+  </footer>
 
+  <script>
+    const CSV_URL = "https://docs.google.com/spreadsheets/d/1z0JSYJaETDFlsW8cmxn3LO4GFx7HO6sWHdVoDK05qF4/export?format=csv&gid=1863384913";
+    const REFRESH_MS = 30000;
 
+    /* Normaliza fechas */
+    function parseFecha(str){
+      if(!str) return null;
+      str = str.trim();
 
-<script>
-const CSV_URL = "https://docs.google.com/spreadsheets/d/1z0JSYJaETDFlsW8cmxn3LO4GFx7HO6sWHdVoDK05qF4/export?format=csv&gid=1863384913";
-const REFRESH_MS = 30000;
+      const iso = /^\d{4}-\d{2}-\d{2}/;
+      if(iso.test(str)) return new Date(str);
 
-function parseFecha(str){
-  if(!str) return null;
-  str = str.trim();
-  const iso = /^\d{4}-\d{2}-\d{2}/;
-  if(iso.test(str)) return new Date(str);
-  const dm = /^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})$/;
-  const m = str.match(dm);
-  if(m){
-    let d = +m[1], mo = +m[2]-1, y = +m[3];
-    if(y<100) y+=2000;
-    return new Date(y,mo,d);
-  }
-  const dd = new Date(str);
-  return isNaN(dd) ? null : dd;
-}
+      const dm = /^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})$/;
+      const m = str.match(dm);
+      if(m){
+        let d = +m[1];
+        let mo = +m[2]-1;
+        let y = +m[3];
+        if(y<100) y += 2000;
+        return new Date(y,mo,d);
+      }
 
-function isSameDay(a,b){
-  return a.getFullYear()===b.getFullYear() && a.getMonth()===b.getMonth() && a.getDate()===b.getDate();
-}
+      const dd = new Date(str);
+      return isNaN(dd) ? null : dd;
+    }
 
-function claseResultado(valor){
-  if(!valor) return "res-sin";
+    function isSameDay(a,b){
+      return a.getFullYear()===b.getFullYear()
+          && a.getMonth()===b.getMonth()
+          && a.getDate()===b.getDate();
+    }
 
-  valor = valor.toLowerCase().trim();
+    /* ------- CLASIFICADOR RESULTADO ------- */
+    function claseResultado(valor){
+      if(!valor) return "res-sin";
 
-  if(valor.includes("habilitado")) return "res-habilitado";
-  if(valor.includes("inhabilitado")) return "res-inhabilitado";
-  if(valor.includes("cond")) return "res-condicionado";
-  if(valor.includes("sin")) return "res-sin";
+      // normalizar: minúsculas, sin tildes, sin espacios extremos
+      valor = valor.toLowerCase()
+                  .normalize("NFD")
+                  .replace(/[\u0300-\u036f]/g,"")
+                  .trim();
 
-  return "res-sin";
-}
+      // comprobar palabras completas en orden seguro
+      if(/\binhabilitado\b/.test(valor)) return "res-inhabilitado";
+      if(/\bhabilitado\b/.test(valor)) return "res-habilitado";
+      if(/\bcond(?:icionado)?\b/.test(valor)) return "res-condicionado";
+      if(/\bsin\b/.test(valor) || /\bsin inspecc/i.test(valor)) return "res-sin";
 
-async function cargarAgenda(){
-  const cuerpo = document.querySelector("#agenda tbody");
-  const lastSpan = document.getElementById("last");
+      // valores comunes alternativos
+      if(valor.includes("no aplica") || valor.includes("n/a")) return "res-sin";
 
-  try{
-    const resp = await fetch(CSV_URL + "&_ts=" + Date.now());
-    if(!resp.ok) throw new Error("HTTP " + resp.status);
+      return "res-sin";
+    }
 
-    const texto = await resp.text();
-    lastSpan.textContent = new Date().toLocaleTimeString();
+    /* ----------- CARGA PRINCIPAL ----------- */
+    async function cargarAgenda(){
+      const cuerpo = document.querySelector('#agenda tbody');
+      const lastSpan = document.getElementById('last');
 
-    const filas = texto
-      .split("\n")
-      .filter(r=>r.trim().length>0)
-      .map(r => r.split(/,(?=(?:[^"]*"[^"]*")*[^"]*$)/));
+      try{
+        const resp = await fetch(CSV_URL + "&_ts=" + Date.now());
+        if(!resp.ok) throw new Error("HTTP " + resp.status);
 
-    const encabezado = filas[0].map(h=>h.trim().toUpperCase());
+        const texto = await resp.text();
+        lastSpan.textContent = new Date().toLocaleTimeString();
 
-    const colsMap = {};
-    ['TIPO','FECHA','EMPRESA','VEHICULO','HORA INICIO','HORA FIN','COORDINADOR','RESULTADO']
-      .forEach(k=>{
+        const filas = texto.split("\n")
+          .filter(r=>r.trim().length>0)
+          .map(r => r.split(/,(?=(?:[^"]*"[^"]*")*[^"]*$)/));
+
+        const encabezado = filas[0].map(h=>h.trim().toUpperCase());
+
+        const colsMap = {};
+        ["TIPO","FECHA","EMPRESA","VEHICULO","HORA INICIO","HORA FIN","COORDINADOR","RESULTADO"]
+        .forEach(k=>{
           colsMap[k] = encabezado.findIndex(h=>h.includes(k));
-      });
+        });
 
-    const data = filas.slice(1);
-    const hoy = new Date();
-    const mode = document.getElementById("mode").value;
+        const dataRows = filas.slice(1);
+        const hoy = new Date();
+        const mode = document.getElementById("mode").value;
 
-    cuerpo.innerHTML = "";
-    let mostradas = 0;
+        cuerpo.innerHTML = "";
+        let mostradas = 0;
 
-    for(const r of data){
-      if(r.every(c=>!c || c.trim()==="")) continue;
+        for(const r of dataRows){
+          if(r.every(c=>!c || c.trim()==="")) continue;
 
-      const fechaStr = r[colsMap["FECHA"]] || "";
-      const fecha = parseFecha(fechaStr);
-      const esHoy = fecha && isSameDay(fecha,hoy);
+          const fechaStr = r[colsMap["FECHA"]] || "";
+          const fecha = parseFecha(fechaStr);
+          const esHoy = fecha && isSameDay(fecha,hoy);
 
-      if(mode==="hoy" && !esHoy) continue;
+          if(mode==="hoy" && !esHoy) continue;
 
-      const tr = document.createElement("tr");
-      if(esHoy) tr.classList.add("hoy");
+          const tr = document.createElement("tr");
+          if(esHoy) tr.classList.add("hoy");
 
-      const valResultado = (r[colsMap["RESULTADO"]] || "").trim();
-      tr.classList.add(claseResultado(valResultado));
+          const getVal = k => (r[colsMap[k]] || "").replace(/^"|"$/g,"").trim();
 
-      const cells = [
-        r[colsMap["TIPO"]] || "",
-        fechaStr,
-        r[colsMap["EMPRESA"]] || "",
-        r[colsMap["VEHICULO"]] || "",
-        r[colsMap["HORA INICIO"]] || "",
-        r[colsMap["HORA FIN"]] || "",
-        r[colsMap["COORDINADOR"]] || "",
-        valResultado
-      ];
+          const resultadoValor = getVal("RESULTADO");
+          const clase = claseResultado(resultadoValor);
 
-      cells.forEach(c=>{
-        const td = document.createElement("td");
-        td.textContent = c.replace(/^"|"$/g,"").trim();
-        tr.appendChild(td);
-      });
+          const cells = [
+            getVal("TIPO"),
+            fechaStr,
+            getVal("EMPRESA"),
+            getVal("VEHICULO"),
+            getVal("HORA INICIO"),
+            getVal("HORA FIN"),
+            getVal("COORDINADOR"),
+            resultadoValor
+          ];
 
-      cuerpo.appendChild(tr);
-      mostradas++;
+          cells.forEach((c,i)=>{
+            const td = document.createElement("td");
+            td.textContent = c;
+
+            if(i === 7){ 
+              td.classList.add(clase); 
+            }
+
+            tr.appendChild(td);
+          });
+
+          cuerpo.appendChild(tr);
+          mostradas++;
+        }
+
+        if(mostradas === 0){
+          const tr = document.createElement("tr");
+          tr.classList.add("empty");
+
+          const td = document.createElement("td");
+          td.colSpan = 8;
+          td.textContent = mode==="hoy"
+            ? "No hay inspecciones para hoy."
+            : "No hay datos disponibles.";
+
+          tr.appendChild(td);
+          cuerpo.appendChild(tr);
+        }
+
+      } catch(err){
+        cuerpo.innerHTML = `<tr class="empty"><td colspan="8">Error cargando la agenda: ${err.message}</td></tr>`;
+      }
     }
 
-    if(mostradas===0){
-      const tr = document.createElement("tr");
-      tr.classList.add("empty");
-      const td = document.createElement("td");
-      td.colSpan = 8;
-      td.textContent = (mode==="hoy") ? "No hay inspecciones para hoy." : "No hay datos disponibles.";
-      tr.appendChild(td);
-      cuerpo.appendChild(tr);
-    }
-
-  }catch(err){
-    cuerpo.innerHTML = `<tr class="empty"><td colspan="8">Error cargando datos: ${err.message}</td></tr>`;
-  }
-}
-
-document.getElementById("mode").addEventListener("change", cargarAgenda);
-cargarAgenda();
-setInterval(cargarAgenda, REFRESH_MS);
-</script>
+    document.getElementById("mode").addEventListener("change", cargarAgenda);
+    cargarAgenda();
+    setInterval(cargarAgenda, REFRESH_MS);
+  </script>
 
 </body>
 </html>
