@@ -39,14 +39,16 @@
       color: #000;
     }
 
+    /* logo reducido 25% (de 200px a 150px) */
     #logo{
-      height: 200px;   /* tamaño aún mayor para proyección en TV */
+      height: 150px;   /* 200px * 0.75 = 150px */
       width: auto;
       object-fit: contain;
     }
 
     @media (max-width:800px){
-      #logo{ height: 100px; } /* sigue siendo grande en móvil */
+      /* mantener proporción móvil también reducida 25% (de 100px a 75px) */
+      #logo{ height: 75px; }
       th,td{font-size:1rem;padding:8px}
       h1{font-size:1.2rem}
     }
