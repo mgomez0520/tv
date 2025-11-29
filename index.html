@@ -111,11 +111,11 @@
 
     .hoy{ background:#ffefef; }
 
-    /* Colores resultado */
-    .res-habilitado, .res-habilitado td { background: var(--res-habilitado) !important; color: white !important; }
-    .res-inhabilitado, .res-inhabilitado td { background: var(--res-inhabilitado) !important; color: white !important; }
-    .res-condicionado, .res-condicionado td { background: var(--res-condicionado) !important; color: black !important; }
-    .res-sin, .res-sin td { background: var(--res-sin) !important; color: white !important; }
+    /* Colores resultado — aplicados sólo a la celda RESULTADO */
+    td.resultado.res-habilitado { background: var(--res-habilitado) !important; color: white !important; }
+    td.resultado.res-inhabilitado { background: var(--res-inhabilitado) !important; color: white !important; }
+    td.resultado.res-condicionado { background: var(--res-condicionado) !important; color: black !important; }
+    td.resultado.res-sin { background: var(--res-sin) !important; color: white !important; }
 
     .empty{
       opacity:0.7;
@@ -277,9 +277,8 @@
           const resultadoValor = getVal("RESULTADO");
           const clase = claseResultado(resultadoValor);
 
-          // aplicar clase a la fila y a la celda RESULTADO
-          tr.classList.add(clase);
-
+          // aplicar clase sólo a la celda RESULTADO (no a la fila)
+ 
           const cells = [
             getVal("TIPO"),
             fechaStr,
@@ -290,15 +289,16 @@
             getVal("COORDINADOR"),
             resultadoValor
           ];
-
+ 
           cells.forEach((c,i)=>{
             const td = document.createElement("td");
             td.textContent = c;
-
+ 
             if(i === 7){
-              td.classList.add(clase);
+              // marcar la celda de resultado con clase genérica y la específic a
+              td.classList.add('resultado', clase);
             }
-
+ 
             tr.appendChild(td);
           });
 
