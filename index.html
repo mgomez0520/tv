@@ -39,16 +39,16 @@
       color: #000;
     }
 
-    /* logo reducido 25% (de 200px a 150px) */
+    /* logo reducido: bajar otro 20% (150px -> 120px) */
     #logo{
-      height: 150px;   /* 200px * 0.75 = 150px */
+      height: 120px;   /* 150px * 0.8 = 120px */
       width: auto;
       object-fit: contain;
     }
 
     @media (max-width:800px){
-      /* mantener proporción móvil también reducida 25% (de 100px a 75px) */
-      #logo{ height: 75px; }
+      /* móvil proporcional: 75px * 0.8 = 60px */
+      #logo{ height: 60px; }
       th,td{font-size:1rem;padding:8px}
       h1{font-size:1.2rem}
     }
