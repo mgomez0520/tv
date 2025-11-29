@@ -40,13 +40,13 @@
     }
 
     #logo{
-      height: 120px;   /* tamaño mayor para proyección en TV */
+      height: 200px;   /* tamaño aún mayor para proyección en TV */
       width: auto;
       object-fit: contain;
     }
 
     @media (max-width:800px){
-      #logo{ height: 64px; } /* reducir en pantallas pequeñas */
+      #logo{ height: 100px; } /* sigue siendo grande en móvil */
       th,td{font-size:1rem;padding:8px}
       h1{font-size:1.2rem}
     }
@@ -160,7 +160,7 @@
           <th>EMPRESA</th>
           <th>VEHICULO</th>
           <th>HORA INICIO</th>
-          <th>HORA FIN</th>
+          <th>HORA FINAL</th>
           <th>COORDINADOR</th>
           <th>RESULTADO</th>
         </tr>
@@ -248,7 +248,7 @@
         const encabezado = filas[0].map(h=>h.trim().toUpperCase());
 
         const colsMap = {};
-        ["TIPO","FECHA","EMPRESA","VEHICULO","HORA INICIO","HORA FIN","COORDINADOR","RESULTADO"]
+        ["TIPO","FECHA","EMPRESA","VEHICULO","HORA INICIO","HORA FINAL","COORDINADOR","RESULTADO"]
         .forEach(k=>{
           colsMap[k] = encabezado.findIndex(h=>h.includes(k));
         });
@@ -286,7 +286,7 @@
             getVal("EMPRESA"),
             getVal("VEHICULO"),
             getVal("HORA INICIO"),
-            getVal("HORA FIN"),
+            getVal("HORA FINAL"),
             getVal("COORDINADOR"),
             resultadoValor
           ];
@@ -319,16 +319,14 @@
           tr.appendChild(td);
           cuerpo.appendChild(tr);
         }
+      }catch(err){
         cuerpo.innerHTML = `<tr class="empty"><td colspan="8">Error cargando la agenda: ${err.message}</td></tr>`;
-      } catch(err){
-    }   cuerpo.innerHTML = `<tr class="empty"><td colspan="8">Error cargando la agenda: ${err.message}</td></tr>`;
       }
+    }
+
     document.getElementById("mode").addEventListener("change", cargarAgenda);
     cargarAgenda();
-    setInterval(cargarAgenda, REFRESH_MS);ntListener("change", cargarAgenda);
-  </script>genda();
     setInterval(cargarAgenda, REFRESH_MS);
-</body>ipt>
-</html>
+  </script>
 </body>
 </html>
