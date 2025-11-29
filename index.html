@@ -40,9 +40,15 @@
     }
 
     #logo{
-      height:64px;
-      width:auto;
-      object-fit:contain;
+      height: 120px;   /* tamaño mayor para proyección en TV */
+      width: auto;
+      object-fit: contain;
+    }
+
+    @media (max-width:800px){
+      #logo{ height: 64px; } /* reducir en pantallas pequeñas */
+      th,td{font-size:1rem;padding:8px}
+      h1{font-size:1.2rem}
     }
 
     h1{
@@ -106,10 +112,10 @@
     .hoy{ background:#ffefef; }
 
     /* Colores resultado */
-    .res-habilitado{ background: var(--res-habilitado) !important; color:white; }
-    .res-inhabilitado{ background: var(--res-inhabilitado) !important; color:white; }
-    .res-condicionado{ background: var(--res-condicionado) !important; color:black; }
-    .res-sin{ background: var(--res-sin) !important; color:white; }
+    .res-habilitado, .res-habilitado td { background: var(--res-habilitado) !important; color: white !important; }
+    .res-inhabilitado, .res-inhabilitado td { background: var(--res-inhabilitado) !important; color: white !important; }
+    .res-condicionado, .res-condicionado td { background: var(--res-condicionado) !important; color: black !important; }
+    .res-sin, .res-sin td { background: var(--res-sin) !important; color: white !important; }
 
     .empty{
       opacity:0.7;
@@ -172,7 +178,7 @@
 
   <script>
     const CSV_URL = "https://docs.google.com/spreadsheets/d/1z0JSYJaETDFlsW8cmxn3LO4GFx7HO6sWHdVoDK05qF4/export?format=csv&gid=1863384913";
-    const REFRESH_MS = 30000;
+    const REFRESH_MS = 60 * 1000; // refrescar cada 60 segundos
 
     /* Normaliza fechas */
     function parseFecha(str){
@@ -206,19 +212,18 @@
     function claseResultado(valor){
       if(!valor) return "res-sin";
 
-      // normalizar: minúsculas, sin tildes, sin espacios extremos
-      valor = valor.toLowerCase()
+      // normalizar: minúsculas, quitar tildes y espacios
+      valor = valor.toString().toLowerCase()
                   .normalize("NFD")
                   .replace(/[\u0300-\u036f]/g,"")
                   .trim();
 
-      // comprobar palabras completas en orden seguro
+      // comprobar coincidencias completas en orden seguro
       if(/\binhabilitado\b/.test(valor)) return "res-inhabilitado";
       if(/\bhabilitado\b/.test(valor)) return "res-habilitado";
       if(/\bcond(?:icionado)?\b/.test(valor)) return "res-condicionado";
-      if(/\bsin\b/.test(valor) || /\bsin inspecc/i.test(valor)) return "res-sin";
+      if(/\bsin\b/.test(valor) || /\bsin inspecci/i.test(valor)) return "res-sin";
 
-      // valores comunes alternativos
       if(valor.includes("no aplica") || valor.includes("n/a")) return "res-sin";
 
       return "res-sin";
@@ -272,6 +277,9 @@
           const resultadoValor = getVal("RESULTADO");
           const clase = claseResultado(resultadoValor);
 
+          // aplicar clase a la fila y a la celda RESULTADO
+          tr.classList.add(clase);
+
           const cells = [
             getVal("TIPO"),
             fechaStr,
@@ -287,8 +295,8 @@
             const td = document.createElement("td");
             td.textContent = c;
 
-            if(i === 7){ 
-              td.classList.add(clase); 
+            if(i === 7){
+              td.classList.add(clase);
             }
 
             tr.appendChild(td);
@@ -311,16 +319,16 @@
           tr.appendChild(td);
           cuerpo.appendChild(tr);
         }
-
-      } catch(err){
         cuerpo.innerHTML = `<tr class="empty"><td colspan="8">Error cargando la agenda: ${err.message}</td></tr>`;
+      } catch(err){
+    }   cuerpo.innerHTML = `<tr class="empty"><td colspan="8">Error cargando la agenda: ${err.message}</td></tr>`;
       }
-    }
-
     document.getElementById("mode").addEventListener("change", cargarAgenda);
     cargarAgenda();
+    setInterval(cargarAgenda, REFRESH_MS);ntListener("change", cargarAgenda);
+  </script>genda();
     setInterval(cargarAgenda, REFRESH_MS);
-  </script>
-
+</body>ipt>
+</html>
 </body>
 </html>
