@@ -79,8 +79,8 @@
     table {
       width: 100%;
       border-collapse: collapse;
-      font-size: 1.4rem;
-      table-layout:fixed;
+      font-size: 1.05rem;    /* texto un poco más pequeño */
+      table-layout: auto;    /* permitir ancho según contenido */
       background:#fff;
     }
 
@@ -94,11 +94,13 @@
 
     th, td {
       border: 1px solid var(--border);
-      padding: 10px 8px;
+      padding: 6px 6px;            /* reducir espacio entre celdas */
       text-align: center;
-      overflow:hidden;
-      text-overflow:ellipsis;
-      white-space:nowrap;
+      white-space: normal;         /* permitir salto de línea */
+      word-break: break-word;      /* cortar palabras largas */
+      overflow: visible;
+      text-overflow: unset;
+      font-size: 1rem;             /* fuente más compacta */
       color:#000;
     }
 
