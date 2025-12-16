@@ -19,6 +19,7 @@
       --res-inhabilitado: #e53935;    /* rojo */
       --res-condicionado: #f2a900;    /* amarillo quemado */
       --res-sin: #2196f3;             /* azul */
+      --res-no-se-presenta: #5e2129;  /* NO SE PRESENTA */
     }
 
     html,body{height:100%;}
@@ -120,6 +121,7 @@
     td.resultado.res-inhabilitado { background: var(--res-inhabilitado) !important; color: white !important; }
     td.resultado.res-condicionado { background: var(--res-condicionado) !important; color: black !important; }
     td.resultado.res-sin { background: var(--res-sin) !important; color: white !important; }
+    td.resultado.res-no-se-presenta { background: var(--res-no-se-presenta) !important; color: white !important; }
 
     .empty{
       opacity:0.7;
@@ -223,6 +225,7 @@
                   .trim();
 
       // comprobar coincidencias completas en orden seguro
+      if(/\bno\s+se\s+presenta\b/.test(valor) || valor.includes("no se presenta")) return "res-no-se-presenta";
       if(/\binhabilitado\b/.test(valor)) return "res-inhabilitado";
       if(/\bhabilitado\b/.test(valor)) return "res-habilitado";
       if(/\bcond(?:icionado)?\b/.test(valor)) return "res-condicionado";
